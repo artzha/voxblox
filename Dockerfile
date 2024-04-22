@@ -1,5 +1,5 @@
 # Use ROS Noetic official image
-FROM ros:noetic-ros-base-focal
+FROM ros:noetic-robot
 
 # Set the working directory
 WORKDIR /workspace
