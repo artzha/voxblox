@@ -10,6 +10,7 @@ import argparse
 import cv2
 import numpy as np
 
+from tqdm import tqdm
 import multiprocessing as mp
 
 import tf2_ros
@@ -18,8 +19,8 @@ from sensor_msgs.msg import PointCloud2, Image, CameraInfo
 from geometry_msgs.msg import PoseStamped
 from cv_bridge import CvBridge
 
-from utils import pub_pc_to_rviz
-
+from utils import pub_pc_to_rviz, apply_rgb_cmap
+from calibration import load_intrinsics, load_extrinsics
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Converts 3d point cloud bin files, corresponding RGB images, and known intrinsic and extrinsic calibrations to a ROSBag file.")
@@ -36,12 +37,20 @@ def setup_frames(indir, infos):
     """
 
     pc_dir = join(indir, "3d_comp", "os1")
+    rgb_dir = join(indir, "2d_rect", "cam0")
     pose_dir = join(indir, "poses", "dense_global")
 
-    output = {"pc": [], "pose": []}
+    output = {"pc": [], "pose": [], "rgb": [], "calibration": []}
     pose_dict = {}
+    calib_dict = {}
     for seq, frame in infos:
         pc_path = join(pc_dir, str(seq), f'3d_comp_os1_{seq}_{frame}.bin')
+        rgb_path = join(rgb_dir, str(seq), f'2d_rect_cam0_{seq}_{frame}.png')
+        if seq not in calib_dict:
+            calib_dict[seq] = {}
+            calib_dict[seq]["intr"] = load_intrinsics(indir, seq, "cam0")
+            calib_dict[seq]["extr"] = load_extrinsics(indir, seq, "cam0")
+
         pose_path = join(pose_dir, f'{seq}.txt')
         if seq not in pose_dict:
             pose_dict[seq] = np.loadtxt(pose_path, dtype=np.float64)
@@ -49,11 +58,13 @@ def setup_frames(indir, infos):
 
         output["pc"].append(pc_path)
         output["pose"].append(pose_np)
+        output["rgb"].append(rgb_path)
+        output["calibration"].append(calib_dict[seq])
 
     return output
 
 def publish_frame(inputs):
-    pub_list, pc_path, pose_np = inputs
+    pub_list, pc_path, pose_np, rgb_path, calibration = inputs
 
     # Load pose transform
     ts = pose_np[0]
@@ -70,12 +81,22 @@ def publish_frame(inputs):
     tf_msg.transform.rotation.w = pose_np[4]
 
     # Load point cloud
-    pc_np = np.fromfile(pc_path, dtype=np.float32).reshape(-1, 4)
-    pc_np = pc_np[:, :3] #Only take xyz
-    point_type="x y z"
+    pc_xyz = np.fromfile(pc_path, dtype=np.float32).reshape(-1, 4)
+    pc_xyz = pc_xyz[:, :3] #Only take xyz
+
+    if False:
+        # Apply rgb colormap to point cloud
+        pc_rgb, pc_mask = apply_rgb_cmap(rgb_path, pc_xyz, calibration)
+        pc_xyz = pc_xyz[pc_mask, :]
+        pc_rgb = pc_rgb[pc_mask, :].astype(np.float32) / 255.0
+
+        point_type="x y z r g b"
+        pc_xyz = np.hstack((pc_xyz, pc_rgb))
+    else:
+        point_type="x y z"
 
     # Publish
-    pub_pc_to_rviz(pc_np, pub_list[0], ts, point_type, frame_id="os_sensor", publish=True)
+    pub_pc_to_rviz(pc_xyz, pub_list[0], ts, point_type, frame_id="os_sensor", publish=True)
     pub_list[1].sendTransform(tf_msg)
 
 def main(args):
@@ -92,16 +113,24 @@ def main(args):
         data_infos = setup_frames(indir, frame_infos)
     else:
         raise NotImplementedError
-    import pdb; pdb.set_trace()
+
+    # Initialize ROS node
+    rospy.init_node('coda_voxblox')
 
     publishers = [
         rospy.Publisher('/ouster/points', PointCloud2, queue_size=10),
         tf2_ros.TransformBroadcaster()
     ]
-    
-    #2 Publish frames sequentially
-    for i in range(len(data_infos["pc"])):
-        publish_frame((publishers, data_infos["pc"][i], data_infos["pose"][i]))    
+
+    #2 Publish frames sequentially tqdm visualize progress
+    for i in tqdm(range(len(data_infos["pc"]))):
+        publish_frame((
+            publishers, 
+            data_infos["pc"][i], 
+            data_infos["pose"][i],
+            data_infos["rgb"][i],
+            data_infos["calibration"][i]
+        ))    
 
 
 

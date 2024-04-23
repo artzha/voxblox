@@ -8,5 +8,3 @@ catkin config --merge-devel
 cd /home/voxblox_ws/src
 wstool init . ./voxblox/voxblox_ssh.rosinstall
 wstool update
-cd /home/voxblox_ws/src
-catkin build voxblox_ros

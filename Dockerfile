@@ -21,17 +21,19 @@ RUN apt-get update && apt-get install -y \
     tmux \
     vim \
     rsync \
+    python-is-python3 \
     python3-wstool \
     python3-catkin-tools \
     ros-noetic-cmake-modules \
+    ros-noetic-rviz \
+    ros-noetic-cv-bridge \
+    ros-noetic-pcl-conversions \
+    ros-noetic-pcl-ros \
+    apt install python3-pip \
     protobuf-compiler \
     autoconf
 
-# Install preprocess specific dependencies rospy, rt2_ros, cv_brdige
-# RUN apt-get update && apt-get install -y \
-#     ros-noetic-rospy \
-#     ros-noetic-rt2_ros \
-#     ros-noetic-cv_bridge
+RUN pip3 install tqdm
 
 # Set up the environment for ROS
 ENV ROS_WS /home/voxblox_ws
