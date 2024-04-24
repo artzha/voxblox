@@ -29,11 +29,14 @@ RUN apt-get update && apt-get install -y \
     ros-noetic-cv-bridge \
     ros-noetic-pcl-conversions \
     ros-noetic-pcl-ros \
-    apt install python3-pip \
+    python3-pip \
+    libgoogle-glog-dev \
+    libgflags-dev \
     protobuf-compiler \
+    libprotobuf-dev \
     autoconf
 
-RUN pip3 install tqdm
+RUN pip3 install -U tqdm scipy matplotlib scikit-learn numpy-quaternion
 
 # Set up the environment for ROS
 ENV ROS_WS /home/voxblox_ws

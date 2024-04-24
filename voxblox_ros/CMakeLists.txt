@@ -4,7 +4,7 @@ project(voxblox_ros)
 find_package(catkin_simple REQUIRED)
 catkin_simple(ALL_DEPS_REQUIRED)
 
-add_definitions(-std=c++14 -Wall -Wextra)
+add_definitions(-std=c++17 -Wall -Wextra)
 
 #############
 # LIBRARIES #
@@ -16,6 +16,7 @@ cs_add_library(${PROJECT_NAME}
   src/intensity_server.cc
   src/transformer.cc
   src/tsdf_server.cc
+  src/cloud_classifier.cc
 )
 
 ############
@@ -57,3 +58,14 @@ target_link_libraries(visualize_tsdf ${PROJECT_NAME})
 ##########
 cs_install()
 cs_export()
+
+
+# #################
+# # EXPORT PYTHON #
+# #################
+
+# # Assuming your Python scripts are in the 'scripts/' directory
+# catkin_install_python(PROGRAMS
+#   preprocess/coda_to_publisher.py
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )

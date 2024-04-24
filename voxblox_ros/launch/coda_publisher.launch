@@ -1,0 +1,16 @@
+<launch>
+    <arg name="indir" default="/home/data/coda" />
+    <arg name="dataset_type" default="cluster"/>
+    <arg name="keyid" default="0"/>
+    <arg name="namespace" default="coda" />
+    <arg name="sparsity" default="1" />
+
+    <group ns="$(arg keyid)">
+        <node pkg="voxblox_ros" type="coda_to_publisher.py" name="coda_publisher">
+            <param name="indir" value="$(arg indir)"/>
+            <param name="dataset_type" value="$(arg dataset_type)"/>
+            <param name="keyid" value="$(arg keyid)"/>
+            <param name="sparsity" value="$(arg sparsity)"/>
+        </node>
+    </group>
+</launch>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<launch>
+  <arg name="cluster" default="6" />
+  <arg name="voxelSize" default="0.1" />
+  <arg name="kNeighbors" default="3" />
+  <arg name="kThreshold" default="0.2"/>
+  <arg name="cloudDir" default="/home/data/coda/3d_comp/os1/"/>
+  <arg name="resultDir" default="/home/data/coda/3d_comp_movability/os1/"/>
+  <arg name="publish" default="true"/>
+
+  <node name="cloud_classifier" pkg="map_builder" type="cloud_classifier" output="screen" args="-alsologtostderr" clear_params="true">
+    <param name="cluster" value="$(arg cluster)" />
+    <param name="infoDir" value="$(find map_builder)/data/"/>
+    <param name="meshPath" value="$(find voxblox_ros)/mesh_results/sparse_1.0/$(arg cluster).ply"/>
+    <param name="cloudDir" value="$(arg cloudDir)" />
+    <param name="resultDir" value="$(arg resultDir)" />
+    <param name="voxelSize" value="$(arg voxelSize)" />
+    <param name="kNeighbors" value="$(arg kNeighbors)" />
+    <param name="kThreshold" value="$(arg kThreshold)" />
+    <param name="publish" value="$(arg publish)" />
+    <param name="groundThreshold" value="0.03" />
+    <param name="groundAngle" value="3.0" />
+    <param name="groundMaxIterations" value="1000" />
+  </node>
+
+</launch>
