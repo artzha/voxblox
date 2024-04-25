@@ -56,3 +56,4 @@ docs/api
 *.pkl
 *.png
 **/.vscode/**
+**/3d_comp_movability/**

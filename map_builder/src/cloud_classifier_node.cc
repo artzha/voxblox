@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
   std::atomic<size_t> processed(0);
   int progressBarWidth = 50;  // Width of the progress bar in characters
 
-  // Iterate through the point clouds and classify them
-  // #pragma omp parallel for
+// Iterate through the point clouds and classify them
+#pragma omp parallel for
   for (size_t i = 0; i < classifier.getNumberOfPointClouds(); ++i) {
     std::vector<bool> static_dynamic_flags = classifier.queryPointCloud(i);
     classifier.saveFlags(i, static_dynamic_flags);
@@ -34,15 +34,15 @@ int main(int argc, char** argv) {
     float progress = float(currentProcessed) / totalPointClouds;
     int pos = static_cast<int>(progressBarWidth * progress);
 
-    // #pragma omp critical
-    // {
-    //     std::cout << "\r[" << std::string(pos, '=') <<
-    //     std::string(progressBarWidth - pos, ' ')
-    //             << "] " << int(progress * 100.0) << " %  (" <<
-    //             currentProcessed << "/" << totalPointClouds << ")";
-    //     std::cout.flush();  // Flush the stream
-    // }
-    loop_rate.sleep();
+#pragma omp critical
+    {
+      std::cout << "\r[" << std::string(pos, '=')
+                << std::string(progressBarWidth - pos, ' ') << "] "
+                << int(progress * 100.0) << " %  (" << currentProcessed << "/"
+                << totalPointClouds << ")";
+      std::cout.flush();  // Flush the stream
+    }
+    // loop_rate.sleep();
   }
   std::cout << std::endl;  // End the progress bar
 

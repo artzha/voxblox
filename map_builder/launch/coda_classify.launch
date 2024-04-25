@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <launch>
-  <arg name="cluster" default="6" />
+  <arg name="cluster" default="11" />
   <arg name="voxelSize" default="0.1" />
   <arg name="kNeighbors" default="3" />
   <arg name="kThreshold" default="0.2"/>
@@ -19,7 +19,7 @@
     <param name="kThreshold" value="$(arg kThreshold)" />
     <param name="publish" value="$(arg publish)" />
     <param name="groundThreshold" value="0.03" />
-    <param name="groundAngle" value="3.0" />
+    <param name="groundAngle" value="4.0" />
     <param name="groundMaxIterations" value="1000" />
   </node>
 
